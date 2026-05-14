@@ -139,7 +139,7 @@
     };
 
     const VECTORS = {
-      PET28A: { name: 'pET-28a', size: 5369, description: '강력한 T7 프로모터를 사용하는 대장균 단백질 발현용 벡터', enzymes: ['NdeI', 'XhoI', 'BamHI', 'EcoRI'], protocols: ['Transformation: 얼음에서 해동한 E. coli BL21(DE3) 컴피턴트 셀 50µL에 플라스미드 1µL를 넣고 30분간 방치합니다.', 'Heat Shock: 42°C 워터배스에서 정확히 45초간 반응시킨 후 즉시 얼음에 2분간 둡니다.', 'Recovery: SOC 배지 250µL를 넣고 37°C, 200rpm에서 1시간 동안 흔들며 배양합니다.', 'Selection: Kanamycin (50 µg/mL)이 포함된 LB 아가 플레이트에 50~100µL를 도말하고 37°C에서 16시간 배양합니다.', 'Expression Prep: 생성된 단일 콜로니를 액체 배지에 접종하고 OD600이 0.6이 될 때 IPTG(1mM)를 넣어 단백질 발현을 유도합니다.'], colors: { prom: '#ef4444', mcs: '#3b82f6', res: '#10b981' } },
+      PET28A: { name: 'pET-28a', size: 5369, description: '강력한 T7 프로모터를 사용하는 대장균 단백질 발현용 벡터', enzymes: ['NdeI', 'XhoI', 'BamHI', 'EcoRI'], protocols: ['Transformation: 얼음에서 해동한 E.coli BL21(DE3) 컴피턴트 셀 50µL에 플라스미드 1µL를 넣고 30분간 방치합니다.', 'Heat Shock: 42°C 워터배스에서 정확히 45초간 반응시킨 후 즉시 얼음에 2분간 둡니다.', 'Recovery: SOC 배지 250µL를 넣고 37°C, 200rpm에서 1시간 동안 흔들며 배양합니다.', 'Selection: Kanamycin (50 µg/mL)이 포함된 LB 아가 플레이트에 50~100µL를 도말하고 37°C에서 16시간 배양합니다.', 'Expression Prep: 생성된 단일 콜로니를 액체 배지에 접종하고 OD600이 0.6이 될 때 IPTG(1mM)를 넣어 단백질 발현을 유도합니다.'], colors: { prom: '#ef4444', mcs: '#3b82f6', res: '#10b981' } },
       PCDNA: { name: 'pcDNA-DEST47', size: 7924, description: '포유류 세포주에서 고효율 발현을 위한 범용 벡터', enzymes: ['NotI', 'XhoI', 'BamHI', 'EcoRI'], protocols: ['Preparation: HEK293 또는 CHO 세포를 트립신 처리하여 6-well plate에 70~80% 밀도로 준비합니다.', 'Transfection: Lipofectamine 3000 시약과 플라스미드를 Opti-MEM 배지에 섞어 15분간 실온에서 복합체를 형성합니다.', 'Treatment: 복합체를 세포 배양액에 한 방울씩 떨어뜨리고 37°C, 5% CO2 인큐베이터에서 배양합니다.', 'Selection: 48시간 뒤 기존 배지를 제거하고 G418이 포함된 선택 배지로 교체하여 안정 세포주를 선별합니다.', 'Harvest: 2~3일에 한 번씩 선택 배지를 교체하며, 선별된 세포를 수확하여 Western Blot 등으로 분석합니다.'], colors: { prom: '#8b5cf6', mcs: '#3b82f6', res: '#f59e0b' } },
       PPICZ: { name: 'pPICZα', size: 3329, description: '효모(Pichia pastoris)에서 분비 단백질 발현을 위한 벡터', enzymes: ['EcoRI', 'XhoI', 'NotI'], protocols: ['Linearization: 플라스미드를 효모 게놈에 삽입하기 위해 PmeI 또는 SacI 제한효소로 선형화합니다.', 'Preparation: Pichia pastoris 컴피턴트 셀을 해동하고 선형화된 DNA 5~10µg을 혼합하여 큐벳에 넣습니다.', 'Electroporation: 효모용 전기천공기 조건을 설정(예: 1.5 kV, 25 µF, 200 Ω)하여 전기 충격을 가합니다.', 'Recovery: 즉시 1M Sorbitol 1mL를 넣고 30°C에서 1~2시간 동안 회복 배양합니다.', 'Selection: Zeocin (100 µg/mL) YPDS 플레이트에 도말하여 30°C에서 3~5일간 콜로니를 선별합니다.'], colors: { prom: '#14b8a6', mcs: '#3b82f6', res: '#ec4899' } },
       PUC19: { name: 'pUC19', size: 2686, description: '다양한 목적에 사용되는 소형 범용 클로닝 벡터', enzymes: ['EcoRI', 'BamHI', 'XbaI', 'HindIII'], protocols: ['Transformation: 얼음에서 해동한 DH5α 셀 50µL에 DNA를 넣고 30분간 방치합니다.', 'Heat Shock & Recovery: 42°C에서 45초간 열충격을 준 뒤 얼음에 2분 방치, SOC 배지 추가 후 37°C에서 1시간 배양합니다.', 'Blue-White Screening: Ampicillin 플레이트에 X-gal 및 IPTG를 미리 도말해 둡니다.', 'Plating: 배양액을 플레이트에 도말하고 37°C에서 12~16시간 배양합니다.', 'Selection: 흰색 콜로니(재조합체)를 선별하여 액체 배지에 접종하고, 플라스미드를 추출합니다.'], colors: { prom: '#64748b', mcs: '#3b82f6', res: '#84cc16' } }
@@ -232,7 +232,7 @@
           
           let newHost = host;
           if (organism.includes('Homo sapiens') || organism.includes('Mus musculus')) newHost = 'HEK293 (Mammalian)';
-          else if (organism.includes('Escherichia')) newHost = 'E. coli BL21';
+          else if (organism.includes('Escherichia')) newHost = 'E.coli BL21';
           else if (organism.includes('Saccharomyces') || organism.includes('Pichia')) newHost = 'Pichia pastoris';
           
           if(newHost !== host) {
@@ -458,7 +458,7 @@
 
               <div className="form-group">
                 <label className="form-label">발현 호스트 (Expression Host)</label>
-                <input type="text" className="form-input" placeholder="예: E. coli BL21, HEK293" value={host} onChange={(e) => setHost(e.target.value)} />
+                <input type="text" className="form-input" placeholder="예: E.coli BL21, HEK293" value={host} onChange={(e) => setHost(e.target.value)} />
               </div>
 
               <div className="form-group">
