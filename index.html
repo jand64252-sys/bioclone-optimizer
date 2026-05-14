@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>BioClone Optimizer Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-sub: #64748b;
+      --primary: #475569;
+      --primary-hover: #334155;
+      --border: #e2e8f0;
+      --accent: #3b82f6;
+      --accent-light: #eff6ff;
+      --warning-bg: #fffbeb;
+      --warning-text: #b45309;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; }
+    
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
+    .header-text h1 { font-size: 2.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.2rem; }
+    .header-text p { color: var(--text-sub); font-size: 1.1rem; }
+    
+    .grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+    @media (min-width: 768px) { .grid { grid-template-columns: 1.1fr 0.9fr; } }
+    
+    .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.5rem; border: 1px solid var(--border); }
+    .card-title { display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; border-bottom: 2px solid var(--bg-color); padding-bottom: 0.75rem; }
+    .icon { width: 24px; height: 24px; color: var(--primary); }
+    
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: flex; justify-content: space-between; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-main); }
+    .form-input { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; font-family: inherit; transition: all 0.2s; }
+    .form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+    textarea.form-input { min-height: 100px; font-family: monospace; font-size: 0.9rem; resize: vertical; }
+    
+    .input-row { display: flex; gap: 0.5rem; }
+    
+    /* Dropdown UI */
+    .dropdown-container { position: relative; width: 100%; }
+    .dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); z-index: 10; max-height: 250px; overflow-y: auto; margin-top: 0.5rem; }
+    .dropdown-item { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { background: var(--bg-color); }
+    .dropdown-title { font-weight: 500; color: var(--text-main); font-size: 0.95rem; margin-bottom: 0.2rem; }
+    .dropdown-meta { font-size: 0.8rem; color: var(--text-sub); display: flex; gap: 0.5rem; align-items: center;}
+    
+    .vector-result { background: var(--accent-light); border: 1px solid #bfdbfe; border-radius: 8px; padding: 1.5rem; text-align: center; margin-bottom: 1.5rem; }
+    .vector-name { font-size: 1.5rem; font-weight: 700; color: #1d4ed8; margin: 0.5rem 0; }
+    
+    .warning { background: var(--warning-bg); border: 1px solid #fde68a; border-radius: 8px; padding: 1rem; display: flex; gap: 0.75rem; align-items: flex-start; color: var(--warning-text); margin-bottom: 1.5rem; }
+    
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    th { background: var(--bg-color); font-weight: 500; }
+    
+    .plasmid-map { display: flex; justify-content: center; margin: 1.5rem 0; }
+    .protocol-step { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; padding: 0.75rem; border-radius: 8px; transition: background 0.2s; }
+    .protocol-step:hover { background: var(--bg-color); }
+    .checkbox { width: 1.25rem; height: 1.25rem; margin-top: 0.25rem; cursor: pointer; accent-color: var(--accent); }
+    
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--primary); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background 0.2s; font-family: inherit; white-space: nowrap;}
+    .btn:hover { background: var(--primary-hover); }
+    .btn:disabled { background: var(--text-sub); cursor: not-allowed; }
+    .btn-accent { background: var(--accent); }
+    .btn-accent:hover { background: #2563eb; }
+    .btn-small { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+    
+    .seq-display { background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--border); font-family: monospace; font-size: 0.85rem; word-break: break-all; max-height: 200px; overflow-y: auto; line-height: 1.4; }
+    .highlight-codon { background-color: #fef08a; font-weight: bold; color: #b45309; border-radius: 2px; }
+    
+    .info-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; border-radius: 8px; margin-top: 1rem; position: relative; }
+    .info-box p { margin-bottom: 0.5rem; font-size: 0.9rem; }
+    
+    .mascot { position: fixed; bottom: 2rem; right: 2rem; background: white; border-radius: 50%; padding: 1rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); border: 2px solid var(--border); cursor: pointer; transition: transform 0.2s; z-index: 50; }
+    .mascot:hover { transform: scale(1.1); }
+    
+    .gel-container { display: flex; justify-content: center; gap: 2rem; background: #0f172a; padding: 1rem 2rem; border-radius: 8px; height: 300px; position: relative; border: 2px solid #334155; margin-top: 1rem; }
+    .gel-lane { width: 40px; height: 100%; position: relative; border-left: 1px dashed #334155; border-right: 1px dashed #334155; }
+    .gel-title { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); color: #94a3b8; font-size: 0.8rem; font-weight: bold; width: 100%; text-align: center; }
+    .gel-band { position: absolute; left: 10%; width: 80%; height: 4px; background: rgba(56, 189, 248, 0.8); border-radius: 2px; box-shadow: 0 0 6px rgba(56, 189, 248, 0.5); cursor: pointer; transition: background 0.2s; }
+    .gel-band.ladder { background: rgba(148, 163, 184, 0.6); box-shadow: 0 0 4px rgba(148, 163, 184, 0.3); height: 3px; }
+    .gel-band.vector { background: rgba(250, 204, 21, 0.9); box-shadow: 0 0 8px rgba(250, 204, 21, 0.6); height: 5px; }
+    .gel-band.insert { background: rgba(52, 211, 153, 0.9); box-shadow: 0 0 8px rgba(52, 211, 153, 0.6); height: 5px; }
+    .gel-band:hover::after { content: attr(title); position: absolute; left: 120%; top: -10px; background: white; color: black; font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; white-space: nowrap; z-index: 10; font-family: sans-serif; }
+
+    /* Interactive Seq Viewer styles */
+    .interactive-seq-viewer { background: var(--bg-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--border); font-family: monospace; font-size: 0.9rem; max-height: 250px; overflow-y: auto; line-height: 1.8; word-break: break-all; margin-top: 1rem;}
+    .seq-chunk { cursor: pointer; padding: 2px; border-radius: 3px; display: inline-block; transition: background 0.2s; position: relative; }
+    .seq-chunk:hover { background: #cbd5e1; color: black; font-weight:bold; }
+    .fwd-region { border-bottom: 2px solid #3b82f6; }
+    .rev-region { border-bottom: 2px solid #ef4444; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const Dna = () => <svg className="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="m17 6-2.5-2.5"/><path d="m14 8-1-1"/><path d="m7 18 2.5 2.5"/><path d="m3.5 14.5.5.5"/><path d="m20 9 .5.5"/><path d="m6.5 12.5 1 1"/><path d="m16.5 11.5 1 1"/><path d="m10 16 1.5 1.5"/></svg>;
+    const Microscope = () => <svg className="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg>;
+    const Flask = () => <svg className="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.52 16h12.96"/></svg>;
+    const AlertTriangle = () => <svg className="icon" style={{color: 'var(--warning-text)'}} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>;
+    const Download = () => <svg className="icon" style={{color: 'white', width: '18px', height: '18px'}} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
+    const Save = () => <svg className="icon" style={{color: 'white', width: '16px', height: '16px'}} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
+    const Folder = () => <svg className="icon" style={{color: 'white', width: '16px', height: '16px'}} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>;
+    const Bot = () => <svg className="icon" style={{width: '32px', height: '32px'}} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>;
+    const Search = () => <svg className="icon" style={{width: '16px', height: '16px', color: 'white'}} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+
+    function useDebounce(value, delay) {
+      const [debouncedValue, setDebouncedValue] = useState(value);
+      useEffect(() => {
+        const handler = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(handler);
+      }, [value, delay]);
+      return debouncedValue;
+    }
+
+    const ENZYME_SITES = {
+      'NdeI': 'CATATG', 'XhoI': 'CTCGAG', 'BamHI': 'GGATCC', 'EcoRI': 'GAATTC',
+      'NotI': 'GCGGCCGC', 'PmeI': 'GTTTAAAC', 'SacI': 'GAGCTC', 'XbaI': 'TCTAGA', 'HindIII': 'AAGCTT'
+    };
+
+    const VECTORS = {
+      PET28A: { name: 'pET-28a', size: 5369, description: '강력한 T7 프로모터를 사용하는 대장균 단백질 발현용 벡터', enzymes: ['NdeI', 'XhoI', 'BamHI', 'EcoRI'], protocols: ['Transformation: 얼음에서 해동한 E. coli BL21(DE3) 컴피턴트 셀 50µL에 플라스미드 1µL를 넣고 30분간 방치합니다.', 'Heat Shock: 42°C 워터배스에서 정확히 45초간 반응시킨 후 즉시 얼음에 2분간 둡니다.', 'Recovery: SOC 배지 250µL를 넣고 37°C, 200rpm에서 1시간 동안 흔들며 배양합니다.', 'Selection: Kanamycin (50 µg/mL)이 포함된 LB 아가 플레이트에 50~100µL를 도말하고 37°C에서 16시간 배양합니다.', 'Expression Prep: 생성된 단일 콜로니를 액체 배지에 접종하고 OD600이 0.6이 될 때 IPTG(1mM)를 넣어 단백질 발현을 유도합니다.'], colors: { prom: '#ef4444', mcs: '#3b82f6', res: '#10b981' } },
+      PCDNA: { name: 'pcDNA-DEST47', size: 7924, description: '포유류 세포주에서 고효율 발현을 위한 범용 벡터', enzymes: ['NotI', 'XhoI', 'BamHI', 'EcoRI'], protocols: ['Preparation: HEK293 또는 CHO 세포를 트립신 처리하여 6-well plate에 70~80% 밀도로 준비합니다.', 'Transfection: Lipofectamine 3000 시약과 플라스미드를 Opti-MEM 배지에 섞어 15분간 실온에서 복합체를 형성합니다.', 'Treatment: 복합체를 세포 배양액에 한 방울씩 떨어뜨리고 37°C, 5% CO2 인큐베이터에서 배양합니다.', 'Selection: 48시간 뒤 기존 배지를 제거하고 G418이 포함된 선택 배지로 교체하여 안정 세포주를 선별합니다.', 'Harvest: 2~3일에 한 번씩 선택 배지를 교체하며, 선별된 세포를 수확하여 Western Blot 등으로 분석합니다.'], colors: { prom: '#8b5cf6', mcs: '#3b82f6', res: '#f59e0b' } },
+      PPICZ: { name: 'pPICZα', size: 3329, description: '효모(Pichia pastoris)에서 분비 단백질 발현을 위한 벡터', enzymes: ['EcoRI', 'XhoI', 'NotI'], protocols: ['Linearization: 플라스미드를 효모 게놈에 삽입하기 위해 PmeI 또는 SacI 제한효소로 선형화합니다.', 'Preparation: Pichia pastoris 컴피턴트 셀을 해동하고 선형화된 DNA 5~10µg을 혼합하여 큐벳에 넣습니다.', 'Electroporation: 효모용 전기천공기 조건을 설정(예: 1.5 kV, 25 µF, 200 Ω)하여 전기 충격을 가합니다.', 'Recovery: 즉시 1M Sorbitol 1mL를 넣고 30°C에서 1~2시간 동안 회복 배양합니다.', 'Selection: Zeocin (100 µg/mL) YPDS 플레이트에 도말하여 30°C에서 3~5일간 콜로니를 선별합니다.'], colors: { prom: '#14b8a6', mcs: '#3b82f6', res: '#ec4899' } },
+      PUC19: { name: 'pUC19', size: 2686, description: '다양한 목적에 사용되는 소형 범용 클로닝 벡터', enzymes: ['EcoRI', 'BamHI', 'XbaI', 'HindIII'], protocols: ['Transformation: 얼음에서 해동한 DH5α 셀 50µL에 DNA를 넣고 30분간 방치합니다.', 'Heat Shock & Recovery: 42°C에서 45초간 열충격을 준 뒤 얼음에 2분 방치, SOC 배지 추가 후 37°C에서 1시간 배양합니다.', 'Blue-White Screening: Ampicillin 플레이트에 X-gal 및 IPTG를 미리 도말해 둡니다.', 'Plating: 배양액을 플레이트에 도말하고 37°C에서 12~16시간 배양합니다.', 'Selection: 흰색 콜로니(재조합체)를 선별하여 액체 배지에 접종하고, 플라스미드를 추출합니다.'], colors: { prom: '#64748b', mcs: '#3b82f6', res: '#84cc16' } }
+    };
+
+    function App() {
+      const [targetGene, setTargetGene] = useState('');
+      const [host, setHost] = useState('');
+      const debouncedHost = useDebounce(host, 500);
+      const [cloningMode, setCloningMode] = useState('restriction');
+      
+      const [ncbiId, setNcbiId] = useState('');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [searchResults, setSearchResults] = useState([]);
+      const [isSearching, setIsSearching] = useState(false);
+      
+      const [dnaSequence, setDnaSequence] = useState('');
+      const [isLoading, setIsLoading] = useState(false);
+      const [errorMsg, setErrorMsg] = useState('');
+      const [successMsg, setSuccessMsg] = useState('');
+      
+      const [optimizedSequence, setOptimizedSequence] = useState(null);
+      const [primers, setPrimers] = useState(null);
+      const [proteinInfo, setProteinInfo] = useState(null);
+
+      const getRecommendedVector = () => {
+        const h = debouncedHost.toLowerCase();
+        if (!h) return null;
+        if (h.includes('coli')) return VECTORS.PET28A;
+        if (h.includes('hek') || h.includes('cho') || h.includes('mammalian')) return VECTORS.PCDNA;
+        if (h.includes('yeast') || h.includes('saccharomyces') || h.includes('pichia')) return VECTORS.PPICZ;
+        return VECTORS.PUC19;
+      };
+
+      const recommendedVector = getRecommendedVector();
+
+      useEffect(() => {
+        if (!dnaSequence || dnaSequence.length < 3) return setProteinInfo(null);
+        
+        const codonTable = {
+          'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M', 'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+          'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K', 'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+          'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L', 'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+          'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q', 'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+          'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V', 'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+          'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E', 'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+          'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S', 'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+          'TAC':'Y', 'TAT':'Y', 'TAA':'*', 'TAG':'*', 'TGA':'*', 'TGC':'C', 'TGT':'C', 'TGG':'W'
+        };
+        let aa = '';
+        for(let i=0; i<dnaSequence.length-2; i+=3) aa += codonTable[dnaSequence.substr(i, 3)] || '';
+        
+        const mwTable = {A:71.08, R:156.2, N:114.1, D:115.1, C:103.1, E:129.1, Q:128.1, G:57.05, H:137.1, I:113.2, L:113.2, K:128.2, M:131.2, F:147.2, P:97.12, S:87.08, T:101.1, W:186.2, Y:163.2, V:99.13};
+        let mw = 18.02;
+        for(let i=0; i<aa.length; i++) if(mwTable[aa[i]]) mw += mwTable[aa[i]];
+        
+        const pKa = { N: 8.0, C: 3.1, D: 4.1, E: 4.1, H: 6.0, CYS: 8.3, Y: 10.9, K: 10.8, R: 12.5 };
+        const counts = { D:0, E:0, C:0, Y:0, H:0, K:0, R:0 };
+        for(let i=0; i<aa.length; i++) if(counts[aa[i]] !== undefined) counts[aa[i]]++;
+        
+        const calcQ = (pH) => 1/(1+Math.pow(10,pH-pKa.N)) + counts.K/(1+Math.pow(10,pH-pKa.K)) + counts.R/(1+Math.pow(10,pH-pKa.R)) + counts.H/(1+Math.pow(10,pH-pKa.H)) - 1/(1+Math.pow(10,pKa.C-pH)) - counts.D/(1+Math.pow(10,pKa.D-pH)) - counts.E/(1+Math.pow(10,pKa.E-pH)) - counts.C/(1+Math.pow(10,pKa.CYS-pH)) - counts.Y/(1+Math.pow(10,pKa.Y-pH));
+        let pI = 7.0, min = 0, max = 14;
+        for(let i=0; i<50; i++) {
+          pI = (min + max) / 2;
+          if(calcQ(pI) > 0) min = pI; else max = pI;
+        }
+        setProteinInfo({ aa, mw: (mw/1000).toFixed(2), pI: pI.toFixed(2) });
+      }, [dnaSequence]);
+
+      const fetchNCBI = async (accession) => {
+        if (!accession) return;
+        setNcbiId(accession);
+        setSearchQuery(accession);
+        setSearchResults([]);
+        setIsLoading(true); setErrorMsg(''); setSuccessMsg(''); setPrimers(null);
+        try {
+          const res = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=${accession}&rettype=gb&retmode=text`);
+          const text = await res.text();
+          if (!text || text.includes('Error')) return setErrorMsg('NCBI 연동 실패. Accession을 확인해주세요.');
+          
+          let organism = '';
+          const orgMatch = text.match(/ORGANISM\s+([^\n]+)/);
+          if (orgMatch) organism = orgMatch[1].trim();
+          
+          const originSplit = text.split('ORIGIN');
+          if (originSplit.length > 1) {
+            let seqData = originSplit[1].replace(/\/\/[\s\S]*$/, '');
+            setDnaSequence(seqData.replace(/[\d\s]/g, '').toUpperCase());
+          }
+          
+          let newHost = host;
+          if (organism.includes('Homo sapiens') || organism.includes('Mus musculus')) newHost = 'HEK293 (Mammalian)';
+          else if (organism.includes('Escherichia')) newHost = 'E. coli BL21';
+          else if (organism.includes('Saccharomyces') || organism.includes('Pichia')) newHost = 'Pichia pastoris';
+          
+          if(newHost !== host) {
+            setHost(newHost);
+            setSuccessMsg(`기원(${organism})을 분석하여 호스트를 [${newHost}]로 자동 세팅했습니다.`);
+            setTimeout(() => setSuccessMsg(''), 5000);
+          }
+          
+          const defMatch = text.match(/DEFINITION\s+([^]+?)ACCESSION/);
+          if (defMatch) setTargetGene(defMatch[1].replace(/\n/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 50) + '...');
+        } catch (err) { setErrorMsg('통신 오류'); } finally { setIsLoading(false); }
+      };
+
+      const searchNCBI = async () => {
+        if (!searchQuery) return;
+        // Accession 번호 패턴이면 바로 fetch
+        if (/^[A-Z]{2}_\d+/i.test(searchQuery)) {
+           return fetchNCBI(searchQuery);
+        }
+
+        setIsSearching(true); setErrorMsg(''); setSearchResults([]); setSuccessMsg(''); setPrimers(null);
+        try {
+          // 1. esearch 호출
+          const term = encodeURIComponent(`${searchQuery} AND "mRNA"[Filter]`);
+          const searchRes = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=nuccore&term=${term}&retmode=json&retmax=5`);
+          const searchData = await searchRes.json();
+          
+          if (!searchData.esearchresult || !searchData.esearchresult.idlist || searchData.esearchresult.idlist.length === 0) {
+             setErrorMsg('검색 결과가 없습니다. 다른 키워드로 시도해 보세요.');
+             setIsSearching(false);
+             return;
+          }
+          
+          // 2. esummary 호출 (제목, 길이, accession 추출)
+          const ids = searchData.esearchresult.idlist.join(',');
+          const sumRes = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=nuccore&id=${ids}&retmode=json`);
+          const sumData = await sumRes.json();
+          
+          const results = [];
+          for (let id of searchData.esearchresult.idlist) {
+            const info = sumData.result[id];
+            if (info) {
+              results.push({
+                accession: info.accessionversion,
+                title: info.title,
+                length: info.slen,
+                organism: info.organism
+              });
+            }
+          }
+          setSearchResults(results);
+        } catch (err) {
+          setErrorMsg('검색 중 통신 오류가 발생했습니다.');
+        } finally {
+          setIsSearching(false);
+        }
+      };
+
+      const calculateTm = (seq) => {
+        const g = (seq.match(/G/g) || []).length; const c = (seq.match(/C/g) || []).length;
+        const a = (seq.match(/A/g) || []).length; const t = (seq.match(/T/g) || []).length;
+        return 4 * (g + c) + 2 * (a + t);
+      };
+
+      const reverseComplement = (seq) => {
+        const map = {A:'T', T:'A', G:'C', C:'G'};
+        return seq.split('').reverse().map(b => map[b] || b).join('');
+      };
+
+      const designPrimers = () => {
+        if (!dnaSequence || !recommendedVector) return setErrorMsg('서열과 호스트를 먼저 입력해주세요.');
+        const targetStart = dnaSequence.substring(0, 20);
+        const targetEnd = dnaSequence.substring(dnaSequence.length - 20);
+
+        if(cloningMode === 'gibson') {
+          const vecUpstream = 'GACTACAAGGACGACGATGACAAG'; // Mock Fwd Homology Arm
+          const vecDownstream = 'TGATGATAAGGATCGATCGCGAGC'; // Mock Rev Homology Arm
+          setPrimers({
+            mode: 'gibson',
+            fwd: vecUpstream + targetStart,
+            rev: reverseComplement(targetEnd + vecDownstream),
+            fwdTm: calculateTm(targetStart), revTm: calculateTm(reverseComplement(targetEnd))
+          });
+        } else {
+          const safeEnzymes = recommendedVector.enzymes.filter(enz => !dnaSequence.includes(ENZYME_SITES[enz]));
+          if (safeEnzymes.length < 2) return setErrorMsg('추천 벡터 제한효소 중 안전한 효소가 2개 미만입니다.');
+          const [fwdEnz, revEnz] = safeEnzymes;
+          setPrimers({
+            mode: 'restriction', fwdEnz, revEnz,
+            fwd: ENZYME_SITES[fwdEnz] + targetStart, rev: ENZYME_SITES[revEnz] + reverseComplement(targetEnd),
+            fwdTm: calculateTm(targetStart), revTm: calculateTm(reverseComplement(targetEnd))
+          });
+        }
+      };
+
+      const downloadCSV = () => {
+        if (!primers) return;
+        const name = targetGene ? targetGene.replace(/[^a-zA-Z0-9]/g, '_') : 'TargetGene';
+        const rows = [ ['Name', 'Sequence', 'Scale', 'Purification'], [`${name}_Fwd`, primers.fwd, '25nmol', 'Desalt'], [`${name}_Rev`, primers.rev, '25nmol', 'Desalt'] ];
+        const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+        const link = document.createElement("a");
+        link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute("download", `${name}_primers.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+
+      const saveProject = () => {
+        const pName = prompt("저장할 프로젝트 이름:", targetGene || "새 프로젝트");
+        if(!pName) return;
+        let p = JSON.parse(localStorage.getItem('bioclone_projects') || '{}');
+        p[pName] = { targetGene, host, ncbiId, dnaSequence, date: new Date().toLocaleString() };
+        localStorage.setItem('bioclone_projects', JSON.stringify(p));
+        alert('보관함에 저장되었습니다.');
+      };
+
+      const loadProject = () => {
+        let p = JSON.parse(localStorage.getItem('bioclone_projects') || '{}');
+        if(Object.keys(p).length === 0) return alert('저장된 프로젝트가 없습니다.');
+        const pName = prompt("불러올 프로젝트 이름:\n" + Object.keys(p).map(k => `📁 ${k}`).join('\n'));
+        if(p[pName]) {
+          setTargetGene(p[pName].targetGene); setHost(p[pName].host);
+          setNcbiId(p[pName].ncbiId); setDnaSequence(p[pName].dnaSequence);
+          setSearchQuery(p[pName].ncbiId || '');
+          setPrimers(null); setOptimizedSequence(null); setSearchResults([]);
+        }
+      };
+
+      const exportPDF = () => {
+        const element = document.getElementById('report-section');
+        const opt = { margin: 10, filename: 'BioClone_Optimizer_Report.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+        window.html2pdf().set(opt).from(element).save();
+      };
+
+      // Phase 3 Feature: Interactive Sequence Map
+      const renderInteractiveSeq = () => {
+        if(!dnaSequence) return null;
+        const chunks = [];
+        for(let i=0; i<dnaSequence.length; i+=10) {
+          chunks.push({ seq: dnaSequence.substring(i, i+10), start: i+1 });
+        }
+        return (
+          <div style={{marginTop: '1.5rem'}}>
+            <h3 style={{fontSize:'1rem', marginBottom:'0.5rem', fontWeight:'600'}}>인터랙티브 서열 뷰어</h3>
+            <p style={{fontSize:'0.8rem', color:'var(--text-sub)', marginBottom:'0.5rem'}}>* 마우스를 올리면 위치를 확인합니다. 파란선은 Forward, 빨간선은 Reverse 결합부입니다.</p>
+            <div className="interactive-seq-viewer">
+              {chunks.map((chk, idx) => {
+                 let className = "seq-chunk";
+                 if (chk.start <= 20) className += " fwd-region";
+                 if (chk.start > dnaSequence.length - 20) className += " rev-region";
+                 return (
+                   <span key={idx} className={className} title={`${chk.start} ~ ${chk.start + chk.seq.length - 1} bp`}>
+                     {chk.seq}{" "}
+                   </span>
+                 )
+              })}
+            </div>
+          </div>
+        )
+      };
+
+      const renderGel = () => {
+        if(!recommendedVector || !primers || primers.mode !== 'restriction') return null;
+        const v = recommendedVector.size; const i = dnaSequence.length;
+        const pos = (bp) => 10 + 80 * (1 - (Math.log10(Math.max(500, Math.min(bp, 12000))) - Math.log10(500)) / (Math.log10(12000) - Math.log10(500)));
+        return (
+          <div className="gel-container">
+             <div className="gel-lane"><div className="gel-title">Ladder</div>{[10000, 8000, 6000, 5000, 4000, 3000, 2000, 1500, 1000, 500].map(b => <div key={b} className="gel-band ladder" style={{top:`${pos(b)}%`}} title={`${b/1000}kb`}></div>)}</div>
+             <div className="gel-lane"><div className="gel-title">Digest</div><div className="gel-band vector" style={{top:`${pos(v)}%`}} title={`Vector (${v}bp)`}></div><div className="gel-band insert" style={{top:`${pos(i)}%`}} title={`Insert (${i}bp)`}></div></div>
+          </div>
+        );
+      };
+
+      return (
+        <div className="container">
+          <div className="header">
+            <div className="header-text">
+              <h1>BioClone Optimizer Pro</h1>
+              <p>NCBI 통합 검색 및 깁슨 어셈블리가 탑재된 지능형 클로닝 도구</p>
+            </div>
+            <div style={{display:'flex', gap:'0.5rem'}}>
+              <button className="btn btn-small" onClick={loadProject}><Folder /> 불러오기</button>
+              <button className="btn btn-small" onClick={saveProject}><Save /> 보관함 저장</button>
+              <button className="btn btn-accent btn-small" onClick={exportPDF} disabled={!recommendedVector}><Download /> PDF 리포트</button>
+            </div>
+          </div>
+
+          {errorMsg && <div className="warning" style={{marginBottom: '1rem'}}><AlertTriangle /><div><strong>오류:</strong> {errorMsg}</div></div>}
+          {successMsg && <div className="warning" style={{marginBottom: '1rem', background:'var(--accent-light)', borderColor:'var(--accent)', color:'var(--text-main)'}}><AlertTriangle style={{color:'var(--accent)'}}/><div>{successMsg}</div></div>}
+
+          <div className="grid">
+            <div className="card">
+              <h2 className="card-title"><Dna /> 유전자 타겟팅 및 최적화</h2>
+              
+              <div className="form-group">
+                <label className="form-label">NCBI 지능형 통합 검색</label>
+                <div className="dropdown-container">
+                  <div className="input-row">
+                    <input type="text" className="form-input" placeholder="키워드(예: human EGFR) 또는 Accession(예: NM_005228)" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter') searchNCBI(); }} />
+                    <button className="btn" onClick={searchNCBI} disabled={isSearching || isLoading}>
+                      {isSearching || isLoading ? '검색 중...' : <><Search /> 검색</>}
+                    </button>
+                  </div>
+                  
+                  {searchResults.length > 0 && (
+                    <div className="dropdown-list">
+                      {searchResults.map((item, idx) => (
+                        <div key={idx} className="dropdown-item" onClick={() => fetchNCBI(item.accession)}>
+                          <div className="dropdown-title">{item.title}</div>
+                          <div className="dropdown-meta">
+                            <span style={{color:'var(--accent)', fontWeight:'bold'}}>{item.accession}</span>
+                            <span>• {item.organism || 'Unknown'}</span>
+                            <span>• {item.length} bp</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <p style={{fontSize:'0.8rem', color:'var(--text-sub)', marginTop:'0.3rem'}}>* 유전자 이름(예: mouse p53)만 검색해도 자동으로 가장 적합한 서열을 찾아줍니다.</p>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">발현 호스트 (Expression Host)</label>
+                <input type="text" className="form-input" placeholder="예: E. coli BL21, HEK293" value={host} onChange={(e) => setHost(e.target.value)} />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  <span>목적 유전자 서열 (DNA Sequence)</span>
+                  {dnaSequence && <span style={{fontSize: '0.85rem', fontWeight:'normal', color:'var(--accent)'}}>{dnaSequence.length} bp</span>}
+                </label>
+                <textarea className="form-input" placeholder="ATGCGT..." value={dnaSequence} onChange={(e) => {setDnaSequence(e.target.value.toUpperCase().replace(/\s/g, '')); setOptimizedSequence(null); setPrimers(null);}} />
+              </div>
+
+              <div className="form-group" style={{marginTop:'1.5rem', padding:'1rem', background:'var(--bg-color)', borderRadius:'8px', border:'1px solid var(--border)'}}>
+                <label className="form-label" style={{marginBottom:'0.8rem'}}>클로닝 설계 방식</label>
+                <div style={{display:'flex', gap:'1.5rem'}}>
+                  <label style={{cursor:'pointer', display:'flex', alignItems:'center', gap:'0.3rem'}}>
+                    <input type="radio" name="cloningMode" value="restriction" checked={cloningMode === 'restriction'} onChange={(e)=>setCloningMode(e.target.value)} />
+                    전통적 제한효소 (Double Digest)
+                  </label>
+                  <label style={{cursor:'pointer', display:'flex', alignItems:'center', gap:'0.3rem'}}>
+                    <input type="radio" name="cloningMode" value="gibson" checked={cloningMode === 'gibson'} onChange={(e)=>setCloningMode(e.target.value)} />
+                    깁슨 어셈블리 (Gibson Assembly)
+                  </label>
+                </div>
+              </div>
+              
+              <div style={{display: 'flex', gap: '0.5rem', marginTop: '1.5rem'}}>
+                <button className="btn btn-accent" style={{flex: 1}} onClick={designPrimers} disabled={!dnaSequence || !recommendedVector}>프라이머 디자인</button>
+              </div>
+
+              {primers && (
+                <div className="info-box">
+                  <button onClick={downloadCSV} className="btn btn-small" style={{position:'absolute', right:'1rem', top:'1rem', background:'#22c55e'}}><Download /> CSV 다운로드</button>
+                  <h3 style={{fontSize:'1rem', marginBottom:'0.5rem', fontWeight:'600'}}>{primers.mode === 'gibson' ? '깁슨 어셈블리 프라이머 결과' : '더블 다이제스트 프라이머 결과'}</h3>
+                  {primers.mode === 'restriction' ? (
+                    <p style={{fontSize:'0.8rem', color:'var(--text-sub)'}}>* {primers.fwdEnz} 및 {primers.revEnz} 제한효소 사이트가 추가되었습니다.</p>
+                  ) : (
+                    <p style={{fontSize:'0.8rem', color:'var(--text-sub)'}}>* 깁슨 어셈블리를 위한 벡터 상동성 영역(Homology Arm) 24bp가 부착되었습니다.</p>
+                  )}
+                  <div style={{marginTop:'1rem'}}>
+                    <p><strong>Fwd:</strong> <span style={{fontFamily:'monospace'}}>{primers.fwd}</span> (Tm: {primers.fwdTm}°C)</p>
+                    <p><strong>Rev:</strong> <span style={{fontFamily:'monospace'}}>{primers.rev}</span> (Tm: {primers.revTm}°C)</p>
+                  </div>
+                </div>
+              )}
+
+              {renderInteractiveSeq()}
+
+              {proteinInfo && (
+                <div className="info-box" style={{background:'#f8fafc', borderColor:'var(--border)', marginTop:'1.5rem'}}>
+                  <h3 style={{fontSize:'0.95rem', marginBottom:'0.5rem', fontWeight:'600'}}>단백질 특성 예측 결과</h3>
+                  <p><strong>분자량 (Mw):</strong> ~{proteinInfo.mw} kDa</p>
+                  <p><strong>등전점 (pI):</strong> ~{proteinInfo.pI}</p>
+                  <div style={{maxHeight:'60px', overflowY:'auto', fontSize:'0.75rem', fontFamily:'monospace', wordBreak:'break-all', marginTop:'0.5rem', color:'var(--text-sub)'}}>{proteinInfo.aa}</div>
+                </div>
+              )}
+            </div>
+
+            <div id="report-section" style={{display: 'flex', flexDirection: 'column', gap: '2rem'}}>
+              <div className="card">
+                <h2 className="card-title"><Microscope /> 랩 노트 및 벡터 리포트</h2>
+                
+                {!recommendedVector ? (
+                  <div style={{color: 'var(--text-sub)', textAlign: 'center', padding: '2rem 0'}}>호스트를 입력하시면 최적의 벡터가 추천됩니다.</div>
+                ) : (
+                  <>
+                    <div className="vector-result" style={{marginBottom:'1rem'}}>
+                      <div style={{fontSize: '0.9rem', color: 'var(--primary)'}}>최적 발현 벡터 추천</div>
+                      <div className="vector-name">{recommendedVector.name} <span style={{fontSize:'1rem', fontWeight:'normal', color:'var(--text-sub)'}}>({recommendedVector.size} bp)</span></div>
+                      <div style={{fontSize: '0.95rem', color: 'var(--text-main)'}}>{recommendedVector.description}</div>
+                    </div>
+
+                    <div className="grid" style={{gridTemplateColumns: (primers && primers.mode === 'restriction') ? '1fr 1fr' : '1fr', gap:'1rem', alignItems:'center'}}>
+                      <div>
+                        <h3 style={{fontSize: '1rem', marginBottom: '1rem', textAlign: 'center'}}>플라스미드 맵</h3>
+                        <div className="plasmid-map">
+                          <svg width="100%" height="240" viewBox="-20 -20 240 240">
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="#e2e8f0" strokeWidth="16" />
+                            <path d="M 100 20 A 80 80 0 0 1 156.5 43.4" fill="none" stroke={recommendedVector.colors.prom} strokeWidth="16" strokeLinecap="round" />
+                            <text x="135" y="5" fontSize="12" fill={recommendedVector.colors.prom} fontWeight="bold" textAnchor="middle">Promoter</text>
+                            
+                            <path d="M 169.2 60 A 80 80 0 0 1 180 100" fill="none" stroke={recommendedVector.colors.mcs} strokeWidth="16" strokeLinecap="round" />
+                            <text x="190" y="75" fontSize="12" fill={recommendedVector.colors.mcs} fontWeight="bold" textAnchor="start">MCS</text>
+                            
+                            <path d="M 43.4 156.5 A 80 80 0 0 1 20 100" fill="none" stroke={recommendedVector.colors.res} strokeWidth="16" strokeLinecap="round" />
+                            <text x="10" y="140" fontSize="12" fill={recommendedVector.colors.res} fontWeight="bold" textAnchor="end">Resistance</text>
+                            
+                            <text x="100" y="100" textAnchor="middle" dominantBaseline="middle" fontSize="18" fontWeight="bold" fill="var(--text-main)">{recommendedVector.name}</text>
+                          </svg>
+                        </div>
+                      </div>
+                      
+                      {primers && primers.mode === 'restriction' && (
+                        <div>
+                           <h3 style={{fontSize: '1rem', marginBottom: '0.5rem', textAlign: 'center'}}>가상 아가로스 겔 시뮬레이션</h3>
+                           {renderGel()}
+                           <p style={{fontSize:'0.75rem', textAlign:'center', color:'var(--text-sub)', marginTop:'0.5rem'}}>* {primers.fwdEnz} & {primers.revEnz} 처리 시 예상</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {recommendedVector && (
+                <div className="card">
+                  <h3 className="card-title" style={{marginTop: 0, marginBottom: '1.5rem'}}><Flask style={{verticalAlign:'middle', width:'24px', marginRight:'0.5rem'}}/> 단계별 실험 프로토콜 ({cloningMode === 'gibson' ? 'Gibson Assembly' : 'Restriction Digest'})</h3>
+                  <div>
+                    {recommendedVector.protocols.map((step, idx) => (
+                      <div key={idx} className="protocol-step">
+                        <input type="checkbox" className="checkbox" />
+                        <span style={{lineHeight: '1.4'}}>{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mascot" title="AI 실험실 도우미에게 질문하기 (ChatGPT 연동)" onClick={() => window.open(`https://chatgpt.com/?q=${encodeURIComponent('실험실 도우미로서 질문에 답변해줘. \n현재 타겟: ' + targetGene + '\n호스트: ' + host)}`, '_blank')}>
+            <Bot />
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
